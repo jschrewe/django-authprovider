@@ -37,7 +37,7 @@ def authenticate_view(request):
     except KeyError:
         return HttpResponse(status=400)
     
-    # TODO: This needs more checks -> ask UZ Bonn
+    # TODO: This needs more checks
     user = authenticate(request, username=email, password=password)
     if user is not None:
         return JsonResponse(_make_user_dict(user))
