@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import authenticate_view, get_user_view
 
-app_name='faqs'
+app_name='authprovider'
 
 urlpatterns = [
     path("authenticate/", authenticate_view, name="authenticate"),
