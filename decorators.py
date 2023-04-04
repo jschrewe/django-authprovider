@@ -21,18 +21,15 @@ def authenticate_client(service_name):
                 auth_token = request.headers['Authorization']
             except KeyError:
                 # no auth header provided
-                print("no auth header provided")
                 return HttpResponse(status=401)
             try:
                 method, auth_token = auth_token.split()
             except ValueError:
                 # malformed auth request
-                print("malformed auth request")
                 return HttpResponse(status=401)
 
             # TODO: a different status code might be right
             if method.lower() != "koop":
-                print("Wring method...")
                 return HttpResponse(status=401)
 
             remote_ip = _get_client_ip(request)
@@ -43,7 +40,6 @@ def authenticate_client(service_name):
                     ip_address__iexact=remote_ip
                 ).get(id=auth_token)
             except AuthClient.DoesNotExist:
-                print("client entry not found")
                 return HttpResponse(status=401)
 
             return view_func(request,*args, **kwargs)
