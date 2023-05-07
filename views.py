@@ -4,6 +4,8 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib.auth import authenticate, get_user_model
 from django.views.decorators.csrf import csrf_exempt
 
+from app_user.views.shared_logic.user_passes import is_admin, is_multiplicator, is_participant
+
 from .decorators import authenticate_client
 
 
@@ -11,7 +13,9 @@ def _make_user_dict(user):
      return {
         "email": user.email,
         "id": user.id,
-        "permissions": list(user.get_user_permissions()),
+        "admin": is_admin(user),
+        "multiplicator": is_multiplicator(user),
+        "participant": is_participant(user),
     }
 
 
@@ -37,7 +41,6 @@ def authenticate_view(request):
     except KeyError:
         return HttpResponse(status=400)
     
-    # TODO: This needs more checks
     user = authenticate(request, username=email, password=password)
     if user is not None:
         return JsonResponse(_make_user_dict(user))
@@ -54,3 +57,22 @@ def get_user_view(request, user_id):
         return JsonResponse(_make_user_dict(user))
     except User.DoesNotExist:
         return HttpResponse(status=404)
+    
+
+@csrf_exempt
+@authenticate_client(service_name="multiplikatoren_api")
+def multiplikatoren_api(request, id):
+    try:
+        User = get_user_model()
+        user = User.objects.get(pk=id)
+    except User.DoesNotExist:
+        return HttpResponse(status=404)
+    
+    #
+    # Logik um die dem Benutzer zugehörigen Multiplikatoren zu finden...
+    # Benötigte Felder: Vorname, Nachname, E-Mail Adresse
+    #
+    # Etwa: qs = Multi.objects.get(...)
+    data = list(qs.values("vorname", "nachname", "email"))
+    
+    return JsonResponse({'multis': data})
